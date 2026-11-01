@@ -1,0 +1,1108 @@
+/* Tokens and the reasons behind them are in DESIGN.md. Light and dark follow the system appearance. */
+:root {
+  color-scheme: light dark;
+
+  --plaster: #f2f3f0;
+  --raised: #ffffff;
+  --ink: #17212b;
+  --ink-soft: #4b5663;
+  --hairline: #d5d9dd;
+  --tile-edge: #7c8794;
+  --slot: #e6e8e5;
+  --slot-edge: #cdd2d6;
+  --raw: #ffffff;
+  --key: #e1e4e7;
+  --error: #b42318;
+  --focus: #2250b3;
+
+  --correct: #2250b3;
+  --correct-top: #3c65bc;
+  --correct-edge: #173a85;
+  --on-correct: #ffffff;
+  --present: #efa825;
+  --present-top: #f6c25e;
+  --present-edge: #b97c0c;
+  --on-present: #17212b;
+  --absent: #7a6858;
+  --absent-edge: #5c4d40;
+  --on-absent: #ffffff;
+  --rejected: #b42318;
+  --rejected-fill: #fdeceb;
+
+  --tile-font: 'Rubik Variable', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --r-tile: 6px;
+  --r-key: 8px;
+  --r-button: 10px;
+  --r-sheet: 16px;
+  --gutter: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plaster: #12171d;
+    --raised: #1c232b;
+    --ink: #e8ecef;
+    --ink-soft: #a9b3be;
+    --hairline: #2d3640;
+    --tile-edge: #6b7682;
+    --slot: #0d1116;
+    --slot-edge: #2a323b;
+    --raw: #262e37;
+    --key: #2a323b;
+    --error: #ff8a7a;
+    --focus: #8fb0f5;
+
+    --correct: #3767d1;
+    --correct-top: #4f7ad8;
+    --correct-edge: #234a9e;
+    --present: #e9a21e;
+    --present-top: #f0b851;
+    --present-edge: #a8730f;
+    --on-present: #12171d;
+    --absent: #4f433a;
+    --absent-edge: #8c7b6c;
+    --on-absent: #f3eee8;
+    --rejected: #ff8a7a;
+    --rejected-fill: #3b1f1e;
+  }
+}
+
+/* High-contrast glazes: the player's setting, or the system's Increase Contrast. */
+:root[data-contrast='high'] {
+  --correct: #c2410c;
+  --correct-top: #c2410c;
+  --correct-edge: #8a2e08;
+  --on-correct: #ffffff;
+  --present: #1d63b8;
+  --present-top: #1d63b8;
+  --present-edge: #134680;
+  --on-present: #ffffff;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --correct: #c2410c;
+    --correct-top: #c2410c;
+    --correct-edge: #8a2e08;
+    --on-correct: #ffffff;
+    --present: #1d63b8;
+    --present-top: #1d63b8;
+    --present-edge: #134680;
+    --on-present: #ffffff;
+    --slot-edge: var(--tile-edge);
+    --hairline: var(--tile-edge);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--plaster);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) var(--gutter) max(10px, env(safe-area-inset-bottom));
+}
+
+/* Header: title block leading, symbol buttons trailing. */
+.masthead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 10px 0 6px;
+}
+
+.masthead-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wordmark {
+  margin: 0;
+  font-family: var(--tile-font);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.puzzle-label {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.toolbar {
+  display: flex;
+  margin-left: auto;
+  margin-right: -10px;
+}
+
+.tool-button,
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-button);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tool-button:hover,
+.icon-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.icon-button:disabled {
+  color: var(--tile-edge);
+  cursor: default;
+}
+
+/* Archive context: a slim second row, so the board keeps its height. */
+.archive-bar {
+  order: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding-left: 12px;
+  border-radius: var(--r-button);
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.archive-bar .text-button {
+  white-space: nowrap;
+}
+
+.archive-bar p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--r-button);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button {
+  border: 0;
+  background: var(--ink);
+  color: var(--plaster);
+}
+
+.secondary-button {
+  border: 1px solid var(--tile-edge);
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.primary-button:active,
+.secondary-button:active {
+  transform: translateY(1px);
+}
+
+.text-button {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-button);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+/* Play area */
+.play {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 8px;
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-button);
+  background: var(--raised);
+}
+
+.banner p {
+  margin: 0;
+  flex: 1 1 14rem;
+}
+
+/*
+ * The board and its status line fill what the header, banners, and keyboard
+ * leave, centered as one group. The board is about 1.2 times as tall as it is
+ * wide, so its width is capped at 83% of the height left after the status line.
+ */
+.board-wrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.board {
+  container-type: inline-size;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 7px;
+  width: min(360px, 100cqw, (100cqh - 50px) * 0.83);
+}
+
+.board-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  border-radius: var(--r-tile);
+  font-family: var(--tile-font);
+  font-size: clamp(0.9rem, 10.5cqw, 2.05rem);
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* Empty slot: a shallow recess in the plaster. */
+.tile-empty {
+  background: var(--slot);
+  box-shadow: inset 0 0 0 2px var(--slot-edge), inset 0 3px 4px rgb(0 0 0 / 0.06);
+}
+
+/* Typed letter: a raw tile standing proud of the wall. The lower edge is its thickness. */
+.tile-filled {
+  background: var(--raw);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--tile-edge), 0 2px 0 var(--tile-edge);
+}
+
+/*
+ * Refused guess: the raw tile is sent back, not fired. An outline rather than a
+ * fill, so it can't be mistaken for a glaze (including high contrast's orange).
+ */
+.tile-rejected {
+  background: var(--rejected-fill);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--rejected), 0 2px 0 var(--rejected);
+}
+
+/*
+ * Fired tiles. The glaze gradient is the light on a glossy surface, so only the
+ * glazed states get one; bisque is matte and flat. Each is drawn as the top
+ * layer over the raw tile so the reveal can pour it in.
+ */
+.tile-correct {
+  background:
+    linear-gradient(170deg, var(--correct-top), var(--correct) 55%) bottom / 100% 100% no-repeat,
+    var(--raw);
+  color: var(--on-correct);
+  box-shadow: 0 2px 0 var(--correct-edge);
+}
+
+.tile-present {
+  background:
+    linear-gradient(170deg, var(--present-top), var(--present) 55%) bottom / 100% 100% no-repeat,
+    var(--raw);
+  color: var(--on-present);
+  box-shadow: 0 2px 0 var(--present-edge);
+}
+
+.tile-absent {
+  background: linear-gradient(var(--absent), var(--absent)) bottom / 100% 100% no-repeat, var(--raw);
+  color: var(--on-absent);
+  box-shadow: 0 2px 0 var(--absent-edge);
+}
+
+/* Maker's marks: the non-color cue. Filled circle = right spot, ring = elsewhere in the word, cross = refused. */
+.tile-correct::after,
+.tile-present::after,
+.tile-rejected::after {
+  content: '';
+  position: absolute;
+  top: 9%;
+  right: 9%;
+  width: 17%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.tile-correct::after {
+  background: currentColor;
+}
+
+.tile-present::after {
+  border: max(2px, 0.08em) solid currentColor;
+}
+
+.tile-rejected::after {
+  border-radius: 0;
+  background:
+    linear-gradient(45deg, transparent 40%, var(--rejected) 40% 60%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, var(--rejected) 40% 60%, transparent 60%);
+}
+
+/* The one orchestrated moment: glaze pours up into each tile in turn. */
+.tile-reveal {
+  animation: pour 380ms cubic-bezier(0.3, 0, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 220ms);
+}
+
+.tile-reveal::after {
+  animation: mark 380ms both;
+  animation-delay: calc(var(--i) * 220ms);
+}
+
+@keyframes pour {
+  0% {
+    background-size: 100% 0%, auto;
+    color: var(--ink);
+    box-shadow: inset 0 0 0 2px var(--tile-edge), 0 2px 0 var(--tile-edge);
+  }
+  /* The letter switches to its glaze color once the pour passes the letter's middle. */
+  50% {
+    color: var(--ink);
+  }
+  100% {
+    background-size: 100% 100%, auto;
+  }
+}
+
+@keyframes mark {
+  0%,
+  70% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.board-row-shake {
+  animation: shake 320ms ease-in-out;
+}
+
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+/* Status line: a fixed slot so messages never push the keyboard around. */
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-height: 44px;
+  width: 100%;
+  text-align: center;
+}
+
+.status p {
+  margin: 0;
+}
+
+.status-quiet {
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+
+.status-tag {
+  font-weight: 600;
+}
+
+.status-error {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.status-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.3em;
+  height: 1.3em;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+.status-done p {
+  font-family: var(--tile-font);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Keyboard: ten keys must fit a 320px screen, so keys narrow but stay a full thumb tall. */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  user-select: none;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.keyboard-row:nth-child(2) {
+  padding: 0 4.5%;
+}
+
+.key {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-key);
+  background: var(--key);
+  color: var(--ink);
+  box-shadow: 0 1px 0 var(--tile-edge);
+  font-family: var(--ui);
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.key:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.key:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.key-wide {
+  flex: 1.5 1 0;
+  font-size: 0.875rem;
+  text-transform: none;
+}
+
+.key-correct {
+  background: var(--correct);
+  color: var(--on-correct);
+  box-shadow: 0 1px 0 var(--correct-edge);
+}
+
+.key-present {
+  background: var(--present);
+  color: var(--on-present);
+  box-shadow: 0 1px 0 var(--present-edge);
+}
+
+.key-absent {
+  background: var(--absent);
+  color: var(--on-absent);
+  box-shadow: 0 1px 0 var(--absent-edge);
+}
+
+.key-correct::after,
+.key-present::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.key-correct::after {
+  background: currentColor;
+}
+
+.key-present::after {
+  border: 2px solid currentColor;
+}
+
+/* Sheets: rise from the bottom on narrow screens, center on wide ones. */
+.dialog {
+  width: min(480px, calc(100vw - 2 * var(--gutter)));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sheet);
+  background: var(--raised);
+  color: var(--ink);
+  /* The only soft shadow in the app: sheets float above the page. */
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.28);
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: rgb(10 14 18 / 0.5);
+}
+
+@media (max-width: 559px) {
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90dvh;
+    margin: auto 0 0;
+    border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.dialog-body {
+  padding: 0 20px 24px;
+}
+
+.dialog-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 -20px 4px;
+  padding: 8px 10px 8px 20px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--raised);
+}
+
+.dialog h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.dialog h3 {
+  margin: 22px 0 6px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.dialog p {
+  margin: 0 0 10px;
+}
+
+.sheet-lede {
+  margin-top: 12px !important;
+  color: var(--ink-soft);
+}
+
+.fine {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.empty {
+  color: var(--ink-soft);
+}
+
+.example {
+  margin: 14px 0;
+}
+
+.example-row {
+  width: min(250px, 100%);
+  container-type: inline-size;
+}
+
+.example figcaption {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+}
+
+/* Results */
+.result-line {
+  margin-top: 12px !important;
+  font-family: var(--tile-font);
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+.result-word {
+  font-family: var(--tile-font);
+  letter-spacing: 0.04em;
+}
+
+.definition {
+  margin: 12px 0 16px;
+  padding: 14px 16px;
+  border-radius: var(--r-button);
+  background: var(--plaster);
+}
+
+.definition-status {
+  margin: 0 0 6px;
+}
+
+.definition-word {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-family: var(--tile-font);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.definition-phonetic {
+  color: var(--ink-soft);
+  font-family: var(--ui);
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.meaning-pos {
+  margin: 10px 0 2px !important;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  font-style: italic;
+}
+
+.meaning ol {
+  margin: 0 0 6px;
+  padding-left: 1.4em;
+}
+
+.meaning li {
+  overflow-wrap: anywhere;
+}
+
+.meaning-example {
+  color: var(--ink-soft);
+}
+
+.share {
+  margin: 8px 0;
+}
+
+.share-status {
+  min-height: 1.45em;
+  margin: 6px 0 0 !important;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+
+.share-text {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--tile-edge);
+  border-radius: var(--r-key);
+  background: var(--plaster);
+  color: var(--ink);
+  font: inherit;
+  resize: none;
+}
+
+.countdown-time {
+  font-family: var(--tile-font);
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.stat-grid div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  text-align: center;
+}
+
+.stat-grid dt {
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+
+.stat-grid dd {
+  margin: 0;
+  font-family: var(--tile-font);
+  font-size: 1.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.distribution {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.distribution li {
+  display: grid;
+  grid-template-columns: 1.2em 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.distribution-label {
+  font-weight: 600;
+  text-align: right;
+}
+
+.distribution-bar {
+  display: block;
+  min-width: 1.8em;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--absent);
+  color: var(--on-absent);
+  font-weight: 600;
+  text-align: right;
+}
+
+.distribution-today .distribution-bar {
+  background: var(--correct);
+  color: var(--on-correct);
+}
+
+/* Archive: the calendar is a small tile wall, using the same materials as the board. */
+.archive-summary {
+  font-weight: 600;
+}
+
+.month-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px -8px 6px;
+}
+
+.month-bar h3 {
+  margin: 0 !important;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-weekday {
+  padding-bottom: 2px;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.calendar-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-tile);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+button.calendar-day {
+  cursor: pointer;
+}
+
+.calendar-future {
+  color: var(--ink-soft);
+  opacity: 0.55;
+}
+
+.calendar-unplayed {
+  background: var(--slot);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--slot-edge);
+}
+
+.calendar-started {
+  background: var(--raw);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--tile-edge), 0 2px 0 var(--tile-edge);
+}
+
+.calendar-won {
+  background: linear-gradient(170deg, var(--correct-top), var(--correct) 55%);
+  color: var(--on-correct);
+  box-shadow: 0 2px 0 var(--correct-edge);
+}
+
+.calendar-lost {
+  background: var(--absent);
+  color: var(--on-absent);
+  box-shadow: 0 2px 0 var(--absent-edge);
+}
+
+.calendar-date {
+  font-weight: 600;
+}
+
+.calendar-score {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+/* Today: a bar under the date. The puzzle on screen now: an outline. */
+.calendar-today .calendar-date {
+  font-weight: 800;
+  box-shadow: 0 2px 0 currentColor;
+}
+
+.calendar-day[aria-current='true'] {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.calendar-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 14px 0 0;
+  padding: 0;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  list-style: none;
+}
+
+.calendar-key li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* Settings */
+.setting {
+  margin: 14px 0 18px;
+}
+
+.setting-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.setting-toggle input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.setting-toggle:has(input:disabled) {
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.setting-help {
+  margin: 0 0 0 34px !important;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+
+.setting-note {
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+
+/* Short screens: trade some key height for room to see the board. */
+@media (max-height: 560px) {
+  .masthead {
+    padding: 2px 0;
+  }
+  .play {
+    padding: 2px 0 4px;
+    gap: 4px;
+  }
+  .key {
+    height: 44px;
+  }
+  .keyboard {
+    gap: 5px;
+  }
+  .status {
+    min-height: 36px;
+  }
+}
+
+/*
+ * Short and wide (a phone on its side): there isn't height for a board above a
+ * keyboard, so they sit side by side, with the keyboard on the thumb side.
+ */
+@media (max-height: 560px) and (min-width: 600px) {
+  .app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 1.15fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'head head'
+      'play keys';
+    column-gap: 28px;
+    max-width: 900px;
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+  .masthead {
+    grid-area: head;
+  }
+  .play {
+    grid-area: play;
+  }
+  .keyboard {
+    grid-area: keys;
+    align-self: center;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --gutter: 10px;
+  }
+  .stat-grid dd {
+    font-size: 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
